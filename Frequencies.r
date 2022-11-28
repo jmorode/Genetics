@@ -5,57 +5,69 @@
 #      : input file GenerateIndividuals_Astyanax.r
 # --------------------------------------------------------------------------
 
+options <- commandArgs(trailingOnly = TRUE)
+
+if('help' %in% options | length(options) != 2){
+    cat(" === Frequencies.r ====\n\
+    Compute frequencies of microsatellites alleles given a table of observation\n\
+    Usage: \n \
+    Rscript Frequencies.r <input_file> <output_file>")
+    quit()
+}
 
 #input file
-df_allele <- read.csv("./Input/Genotypes_CF_Lab.csv", header = TRUE, sep=';')
+inputFile <- options[1]
+
+#output file
+outfile <- options[2]
+
+#input file
+df_allele <- read.csv(inputFile, header = TRUE, sep=';')
 df_allele$POP <- NULL
 loci_names <- names(df_allele)
 print(loci_names)
 tot_number_events_by_loci <- nrow(df_allele)
 print(tot_number_events_by_loci)
+
 # output file for input generate individual astyanax code
-outfile <- "./Input/InputGenerateIndividuals-CF_Lab.csv"
+
 df_output <- data.frame(Locus=integer(), Allele=integer(), Frequence=double())
 # initialization of proba different individuals 
 proba <- 1
 
 # loop over loci 
 for (i in names(df_allele)) {
-loci_alleles <- table(df_allele[[i]])
+    loci_alleles <- table(df_allele[[i]])
 
-# init for proba different individuals 
-term_1 <- 0 # sum freq_i^4
-freqs_loci <- c()
+    # init for proba different individuals 
+    term_1 <- 0 # sum freq_i^4
+    freqs_loci <- c()
 
-# loop over alleles in each loci
-for (j in 1:length(loci_alleles)) {
-nbev_by_loci <- tot_number_events_by_loci
-# for generate individual 
-sallele <- strtoi(names(loci_alleles[j]))
-if (sallele == 0) { 
-subcount <- as.numeric(loci_alleles[j])
-nbev_by_loci <- nbev_by_loci - subcount
-}
-else{
-scount <- as.numeric(loci_alleles[j])
-sfrequency <- scount / nbev_by_loci
-new_row = c(i, sallele, sfrequency)
-df_output[nrow(df_output)+1,] <- new_row}
+    loci_alleles = loci_alleles[!names(loci_alleles) == '0']
+    
+    # For the freq, I replaced the number of events by the sum of the table
+    # because in case there is missing value in the table the frequency was 
+    # calculated with these NA row included, which is wrong.
+    freq = loci_alleles / sum(loci_alleles) 
+    term_1 = sum(freq^4)
 
-# for proba different individuals 
-term_1 <- term_1 + sfrequency^4 # sum freq_i^4
-freqs_loci <- c(freqs_loci, sfrequency) # store frequencies
-}
+    for (j in names(loci_alleles)) {
+        df_output <- rbind(df_output, data.frame(Locus=i, Allele=j, Frequence=freq[j]))
+        freqs_loci <- c(freqs_loci, freq[j])
+    }
 
-# compute sum sum (fifj)^2 in each loci
-term_2 <- 0 
-if (length(freqs_loci) > 1) { # else only one allele, term_2 = 0
-for (k in 1:(length(freqs_loci)-1)) {
-for (l in (k+1):length(freqs_loci)){
-term_2 <- term_2 + freqs_loci[k]^2*freqs_loci[l]^2
-}}}
-# compute proba for each loci
-proba <- proba * (term_1 + 4*term_2)
+    # compute sum sum (fifj)^2 in each loci
+    term_2 <- 0 
+    if (length(freqs_loci) > 1) { # else only one allele, term_2 = 0
+        for (k in 1:(length(freqs_loci)-1)) {
+            for (l in (k+1):length(freqs_loci)){
+                term_2 <- term_2 + (as.numeric(freqs_loci[k]) * as.numeric(freqs_loci[l]))^2
+            }
+        }
+    }
+
+    # compute proba for each loci
+    proba <- proba * (term_1 + 4*term_2)
 }
 
 # fill csv for generate individual astyanax code
