@@ -13,8 +13,7 @@ Given a file containing observed microsatellite alleles in a population, this sc
 
 ### Usage
 `Rscript Pairwise_distance_genotype_astyanax.r <inputfile> <outputfile>`
-
-where `<inputfile>` and `<outputfile>` is the path to your input and output files.
+where `<inputfile>` and `<outputfile>` are the path to your input and output files.
 
 ### Input file
 A table with a row per individual and two columns for each locus (one per allele).
@@ -29,3 +28,23 @@ A table with a row per individual and two columns for each locus (one per allele
 There is two output:
 Graph + table
 
+## Frequencies.r
+Compute the probability that two unrelated individuals have the  the same genotype considering the microsatellites observation in the input file.
+
+### Usage
+`Rscript Frequencies.r <inputfile> <outputfile>`
+where `<inputfile>` and `<outputfile>` are the path to your input and output files.
+
+### Input file
+A table with a column per locus and a row per observation. If there is *x* individuals, the file should have *x*2* rows.
+
+| Locus 1 | Locus 2 | … | Locus n |
+| --- | --- | --- | --- |
+| Obs 1.1 | Obs 2.1 | … | Obs n.1 |
+| Obs 1.2 | Obs 2.2 | … | Obs n.2 |
+| … | | | |
+| Obs 1.m | Obs 2.m | … | Obs n.m |
+
+### Output
+* Write in the terminal the probability that two unrelated individuals would have the same genotype.
+* Write the `<outputfile>`in the curreny directory for use with `GenerateIndividual_astyanax.r`
