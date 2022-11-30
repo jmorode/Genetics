@@ -48,3 +48,24 @@ A table with a column per locus and a row per observation. If there is *x* indiv
 ### Output
 * Write in the terminal the probability that two unrelated individuals would have the same genotype.
 * Write the `<outputfile>`in the curreny directory for use with `GenerateIndividual_astyanax.r`
+
+## GenerateIndividual_astyanax.r
+Generate individuals given then frequency of the different alleles given in input
+
+### Usage
+`Rscript GenerateIndivual_astyanax.r <input file> <output directory>`
+where `<input file>` is the path to the input file and `<output directory>` is the path to the directory where all output file will be written (that directory should exist).
+
+### Input file
+The input file can be generated using the script `Frequencies.r`.
+
+### Output
+All results file will be writtent in the `<output directory>`. That directory have to be created prior to execution. You can output in the current directory by using `.`.
+
+* `GeneratedIndividuals4MLRelate.txt`: input file for MLRelate2.
+* `TableFrequencesMatRed.csv`: Distribution of the number of differences between individuals being non-related, parent-offspring, full sibs or half sibs.
+* `DistribDiffMatRed.pdf`: Graph presenting the distribution of the number of differences between individuals.
+* `TableHeterozygosity.csv`: Heterozygosity of each locus.
+
+## Licence
+These scripts are distributed under the CeCILL licence.
