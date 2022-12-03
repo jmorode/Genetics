@@ -5,149 +5,142 @@
 #      : input file for MLRelate	
 # --------------------------------------------------------------------------
 
+options <- commandArgs(trailingOnly = TRUE)
+
+if('help' %in% options | length(options) != 2){
+    cat(" === GenerateIndividual_astyanax.r ====\n\
+    Generate 1000 families composed of a individuald randomly generated using the frequency given in\n \
+    the input file and 6 relatives. Output a file for MLRelate2. \n \
+    Usage: \n \
+    Rscript GenerateIndividual_astyanax.r <input_file> <output_directory>")
+    quit()
+}
+
 
 # Data file
-datafile <- "./Input/InputGenerateIndividuals-SF_Pozo_Pachon_Praxe_2016.csv"
+datafile <- options[1]
 
 # Allèles et fréquences à chaque locus (individus)
 matrix.indata <- scan(datafile, what = list(locus="",alleles=0,frequence=0),quiet=TRUE, sep=",",skip=1)
-loci.list <- unique(matrix.indata$locus) #c(matrix.indata$locus[1])
+locus.list <- unique(matrix.indata$locus) #c(matrix.indata$locus[1])
+nb.locus <- length(locus.list)
+
+matrix.indata$alleles = sapply(matrix.indata$alleles, sprintf, fmt = "%03s") #To make sure that the alleles are 3 digits
 
 # Output
-filename = "./Input/TestFileGenepop_SF_Pozo_Pachon_Praxe_2016.txt"
-write ("Microsatellite genotypes test from generateindividual_Astyanax", filename, append = FALSE )
-write (loci.list, filename,append = TRUE)
+output.dir <- options[2]
+filename = paste0(output.dir, "/GeneratedIndividuals4MLRelate.txt")
+write("Microsatellite genotypes test from GenerateIndividual_astyanax.r", filename, append = FALSE )
+write(locus.list, filename,append = TRUE)
 write("POP", filename,append = TRUE)
 
-# Number of individuals 
+# Number of individuals
 nb.individus <- 1000
-
-#Liste des loci et nombre
-locus.list <- c(matrix.indata$locus[1])
-for(i in 1:length(matrix.indata$locus))
-{
-if (matrix.indata$locus[i] != locus.list[length(locus.list)])
-{locus.list <- c(locus.list,matrix.indata$locus[i])}
-}
-nb.locus <- length(locus.list)
 
 # Matrix differences
 mat.diff = matrix(0, nrow=nb.individus, ncol=4, byrow=TRUE)
 colnames(mat.diff) <- c("Non related","Parent-offspring","Full siblings","Half siblings")
 
 #### N repetitions
-for (k in 1:nb.individus)
-{
-## Generate parents : P1, M, P2
-nb.parents = 3
-mat.parents = matrix(0, nrow=2*nb.parents, ncol=nb.locus, byrow=TRUE)
-rownames(mat.parents) <- c("P1_all-1","P1_all-2","M_all-1","M_all-2","P2_all-1","P2_all-2")
-colnames(mat.parents) <- locus.list
+for (k in 1:nb.individus){
+    ## Generate parents : P1, M, P2
+    nb.parents = 3
+    mat.parents = matrix(0, nrow=2*nb.parents, ncol=nb.locus, byrow=TRUE)
+    rownames(mat.parents) <- c("P1_all-1","P1_all-2","M_all-1","M_all-2","P2_all-1","P2_all-2")
+    colnames(mat.parents) <- locus.list
 
-for(i in 1:nb.locus){
-liste.alleles.locus <- c()
-freq.all.locus <- c()
-for(j in 1:length(matrix.indata$locus)){
-if(matrix.indata$locus[j] == locus.list[i]){
-liste.alleles.locus <- c(liste.alleles.locus, matrix.indata$alleles[j] )
-freq.all.locus <- c(freq.all.locus, matrix.indata$frequence[j] )
-}}
-mat.parents[,i] = sample(liste.alleles.locus, 2*nb.parents, prob=freq.all.locus, replace=TRUE) 
-}
-
-
-# add zero to number with two digits to have the right format for the genepop file
-for(irow in 1:nrow(mat.parents)) {
-    for(icol in 1:ncol(mat.parents)) {
-        if (mat.parents[irow, icol] < 100 | nchar(mat.parents[irow, icol]) < 3){
-		mat.parents[irow, icol] = paste0("0", mat.parents[irow, icol])
-		}}}
+    for(i in 1:nb.locus){
+        liste.alleles.locus <- c()
+        freq.all.locus <- c()
+        for(j in 1:length(matrix.indata$locus)){
+            if(matrix.indata$locus[j] == locus.list[i]){
+                liste.alleles.locus <- c(liste.alleles.locus, matrix.indata$alleles[j])
+                freq.all.locus <- c(freq.all.locus, matrix.indata$frequence[j])
+            }
+        }
+        mat.parents[,i] = sample(liste.alleles.locus, 2*nb.parents, prob=freq.all.locus, replace=TRUE)
+    }
     
-## Generate progeny : F1, F2, DF
-nb.progeny = 3
-mat.progeny = matrix(0, nrow=2*nb.progeny, ncol=nb.locus, byrow=TRUE)
-rownames(mat.progeny) <- c("F1_all-1","F1_all-2","F2_all-1","F2_all-2","DF_all-1","DF_all-2")
-colnames(mat.progeny) <- locus.list
+    ## Generate progeny : F1, F2, DF
+    nb.progeny = 3
+    mat.progeny = matrix(0, nrow=2*nb.progeny, ncol=nb.locus, byrow=TRUE)
+    rownames(mat.progeny) <- c("F1_all-1","F1_all-2","F2_all-1","F2_all-2","DF_all-1","DF_all-2")
+    colnames(mat.progeny) <- locus.list
 
-for(i in 1:nb.locus){
-mat.progeny[1,i] = sample(c(mat.parents[1,i],mat.parents[2,i]),1 , replace=TRUE )# F1 allele pere
-mat.progeny[2,i] = sample(c(mat.parents[3,i],mat.parents[4,i]),1, replace=TRUE ) # F1 allele mere
-mat.progeny[3,i] = sample(c(mat.parents[1,i],mat.parents[2,i]),1, replace=TRUE ) # F2 allele pere
-mat.progeny[4,i] = sample(c(mat.parents[3,i],mat.parents[4,i]),1, replace=TRUE ) # F2 allele mere 
-mat.progeny[5,i] = sample(c(mat.parents[5,i],mat.parents[6,i]),1, replace=TRUE ) # DF allele pere
-mat.progeny[6,i] = sample(c(mat.parents[3,i],mat.parents[4,i]),1, replace=TRUE ) # DF allele mere
-}
+    for(i in 1:nb.locus){
+        mat.progeny[1,i] = sample(c(mat.parents[1,i],mat.parents[2,i]),1 , replace=TRUE )# F1 allele pere
+        mat.progeny[2,i] = sample(c(mat.parents[3,i],mat.parents[4,i]),1, replace=TRUE ) # F1 allele mere
+        mat.progeny[3,i] = sample(c(mat.parents[1,i],mat.parents[2,i]),1, replace=TRUE ) # F2 allele pere
+        mat.progeny[4,i] = sample(c(mat.parents[3,i],mat.parents[4,i]),1, replace=TRUE ) # F2 allele mere 
+        mat.progeny[5,i] = sample(c(mat.parents[5,i],mat.parents[6,i]),1, replace=TRUE ) # DF allele pere
+        mat.progeny[6,i] = sample(c(mat.parents[3,i],mat.parents[4,i]),1, replace=TRUE ) # DF allele mere
+    }
 
 
-#matrix global
+    #matrix global
+    mat.genepop = matrix(0, nrow=nb.parents+nb.progeny, ncol=nb.locus, byrow=TRUE)
+    rownames(mat.genepop) <- c('P1,','M0,','P2,','F1,','F2,','DF,')
+    for( j in seq(1,nb.locus)){
+        mat.genepop[1,j] = paste0(mat.parents[1,j], mat.parents[2,j])
+        mat.genepop[2,j] = paste0(mat.parents[3,j], mat.parents[4,j])
+        mat.genepop[3,j] = paste0(mat.parents[5,j], mat.parents[6,j])
+        mat.genepop[4,j] = paste0(mat.progeny[1,j], mat.progeny[2,j])
+        mat.genepop[5,j] = paste0(mat.progeny[3,j], mat.progeny[4,j])
+        mat.genepop[6,j] = paste0(mat.progeny[5,j], mat.progeny[6,j])
+    }
+    write.table(mat.genepop,file=filename,append = TRUE, sep ="\t", row.names= TRUE, col.names= FALSE, quote = FALSE)
 
-mat.genepop = matrix(0, nrow=nb.parents+nb.progeny, ncol=nb.locus, byrow=TRUE)
-rownames(mat.genepop) <- c('P1,','M0,','P2,','F1,','F2,','DF,')
-for( j in seq(1,nb.locus)){
-mat.genepop[1,j] = paste0(mat.parents[1,j], mat.parents[2,j])
-mat.genepop[2,j] = paste0(mat.parents[3,j], mat.parents[4,j])
-mat.genepop[3,j] = paste0(mat.parents[5,j], mat.parents[6,j])
-mat.genepop[4,j] = paste0(mat.progeny[1,j], mat.progeny[2,j])
-mat.genepop[5,j] = paste0(mat.progeny[3,j], mat.progeny[4,j])
-mat.genepop[6,j] = paste0(mat.progeny[5,j], mat.progeny[6,j])
-}
-write.table(mat.genepop,file= filename,append = TRUE, sep ="\t", row.names= TRUE, col.names= FALSE, quote = FALSE)
+    ## Calculate nb diff 
+    nb.diff.ind.nonerelated = 0
+    nb.diff.ind.pardesc = 0
+    nb.diff.ind.pleinfrere = 0
+    nb.diff.ind.demifrere = 0
 
-## Calculate nb diff 
-nb.diff.ind.nonerelated = 0
-nb.diff.ind.pardesc = 0
-nb.diff.ind.pleinfrere = 0
-nb.diff.ind.demifrere = 0
+    for(i in 1:nb.locus){
+        # btw P1 et P2 (none related)
+        all.locP1 = c(mat.parents[1,i],mat.parents[2,i]) #liste allèle P1
+        all.locP2 = c(mat.parents[5,i],mat.parents[6,i] )#liste allèle P2
+        
+        if(length(unique(c(all.locP1,all.locP2))) == 1){
+            nb.diff.loc.nonerelated = 0
+        }else{
+            nb.diff.loc.nonerelated = 2 - length(intersect(all.locP1,all.locP2))
+        }
+        nb.diff.ind.nonerelated = nb.diff.ind.nonerelated + nb.diff.loc.nonerelated
 
-for(i in 1:nb.locus){
+        # btw P1 et F1 (parent-descendant) 
+        all.locF1 =  c(mat.progeny[1,i], mat.progeny[2,i]) #liste allèle F1
 
-	# btw P1 et P2 (none related)
-all.locP1 = c(mat.parents[1,i],mat.parents[2,i]) #liste allèle P1
-all.locP2 = c(mat.parents[5,i],mat.parents[6,i] )#liste allèle P2
+        if(length(unique(c(all.locP1,all.locF1))) == 1){
+            nb.diff.loc.pardesc = 0
+        }else{
+            nb.diff.loc.pardesc = 2 - length(intersect(all.locP1,all.locF1))
+        }
+        
+        nb.diff.ind.pardesc = nb.diff.ind.pardesc + nb.diff.loc.pardesc
 
-if(length(unique(c(all.locP1,all.locP2))) == 1){
-nb.diff.loc.nonerelated = 0
-}
-else{
-nb.diff.loc.nonerelated = 2 - length(intersect(all.locP1,all.locP2))
-}
-nb.diff.ind.nonerelated = nb.diff.ind.nonerelated + nb.diff.loc.nonerelated
+        # btw F1 et F2 (plein frères)
+        all.locF2 =  c(mat.progeny[3,i], mat.progeny[4,i]) #liste allèle F2
 
-	# btw P1 et F1 (parent-descendant) 
-all.locF1 =  c(mat.progeny[1,i], mat.progeny[2,i]) #liste allèle F1
+        if(length(unique(c(all.locF1,all.locF2))) == 1){
+            nb.diff.loc.pleinfrere = 0
+        }else{
+            nb.diff.loc.pleinfrere = 2 - length(intersect(all.locF1,all.locF2))
+        }
+        nb.diff.ind.pleinfrere = nb.diff.ind.pleinfrere + nb.diff.loc.pleinfrere
+    
+        # btw F1 et DF (demi frères)
+        all.locDF =  c(mat.progeny[5,i], mat.progeny[6,i]) #liste allèle DF
 
-if(length(unique(c(all.locP1,all.locF1))) == 1){
-nb.diff.loc.pardesc = 0
-}
-else{
-nb.diff.loc.pardesc = 2 - length(intersect(all.locP1,all.locF1))
-}
-nb.diff.ind.pardesc = nb.diff.ind.pardesc + nb.diff.loc.pardesc
+        if(length(unique(c(all.locF1,all.locDF))) == 1){
+            nb.diff.loc.demifrere = 0
+        }else{
+            nb.diff.loc.demifrere = 2 - length(intersect(all.locF1,all.locDF))
+        }
+        nb.diff.ind.demifrere = nb.diff.ind.demifrere + nb.diff.loc.demifrere
+    }
 
-	# btw F1 et F2 (plein frères)
-all.locF2 =  c(mat.progeny[3,i], mat.progeny[4,i]) #liste allèle F2
-
-if(length(unique(c(all.locF1,all.locF2))) == 1){
-nb.diff.loc.pleinfrere = 0
-}
-else{
-nb.diff.loc.pleinfrere = 2 - length(intersect(all.locF1,all.locF2))
-}
-nb.diff.ind.pleinfrere = nb.diff.ind.pleinfrere + nb.diff.loc.pleinfrere
-	
-	# btw F1 et DF (demi frères)
-all.locDF =  c(mat.progeny[5,i], mat.progeny[6,i]) #liste allèle DF
-
-if(length(unique(c(all.locF1,all.locDF))) == 1){
-nb.diff.loc.demifrere = 0
-}
-else{
-nb.diff.loc.demifrere = 2 - length(intersect(all.locF1,all.locDF))
-}
-nb.diff.ind.demifrere = nb.diff.ind.demifrere + nb.diff.loc.demifrere
-}
-
-mat.diff[k,] = c(nb.diff.ind.nonerelated, nb.diff.ind.pardesc, nb.diff.ind.pleinfrere, nb.diff.ind.demifrere)
+    mat.diff[k,] = c(nb.diff.ind.nonerelated, nb.diff.ind.pardesc, nb.diff.ind.pleinfrere, nb.diff.ind.demifrere)
 }
 
 
@@ -155,13 +148,12 @@ mat.diff[k,] = c(nb.diff.ind.nonerelated, nb.diff.ind.pardesc, nb.diff.ind.plein
 tab.freq = matrix(0, nrow=4, ncol=2*nb.locus+1, byrow=TRUE)
 rownames(tab.freq) <- c("Non related","Parent-offspring","Full siblings","Half siblings")
 colnames(tab.freq) <- seq(0,2*nb.locus)
-for(i in 1:4)
-{
-for(j in 0:(2*nb.locus))
-{
-tab.freq[i,j+1] <- sum(mat.diff[,i]==j)/nb.individus
-}}
-write.csv(tab.freq,file="./Output/TableauFrequencesMatRed.csv",row.names = TRUE)
+for(i in 1:4){
+    for(j in 0:(2*nb.locus)){
+        tab.freq[i,j+1] <- sum(mat.diff[,i]==j)/nb.individus
+    }
+}
+write.csv(tab.freq,file=paste0(output.dir, "/TableFrequencesMatRed.csv"),row.names = TRUE)
 
 print('tab freq')
 print(tab.freq)
@@ -169,56 +161,61 @@ print(tab.freq)
 sample.nb.locus = nb.locus
 nb.locus = 18
 
-par(mfrow=c(2,2))
-bp<-barplot(tab.freq[1,][0:(2*nb.locus+1)], main = "Non related", xlim = c(0,(2*nb.locus+1)),ylim = c(0,0.25),width=0.8, xaxt="none",  space=0) 
-abline(h=0.05, col="blue")
-axis(side = 2, font = 2)
-axis(side = 1, at = bp, las=2, labels=seq(0, 2*nb.locus, 1), cex.axis=0.8, font=2)
-mtext(side=1, line=2, "Number of differences", font=2,cex=0.8)
-mtext(side=2, line=3, "Frequency", font=2, cex=0.8)
+pdf(paste0(output.dir, "/DistribDiffMatRed.pdf"), width=10, height=10)
+    par(mfrow=c(2,2))
+    bp<-barplot(tab.freq[1,][0:(2*nb.locus+1)], main = "Non related", xlim = c(0,(2*nb.locus+1)),ylim = c(0,0.25),width=0.8, xaxt="none",  space=0) 
+    abline(h=0.05, col="blue")
+    axis(side = 2, font = 2)
+    axis(side = 1, at = bp, las=2, labels=seq(0, 2*nb.locus, 1), cex.axis=0.8, font=2)
+    mtext(side=1, line=2, "Number of differences", font=2,cex=0.8)
+    mtext(side=2, line=3, "Frequency", font=2, cex=0.8)
 
-bp<-barplot(tab.freq[2,][0:(2*nb.locus+1)], main = "Parent-offspring",,xlim = c(0,(2*nb.locus+1)),ylim = c(0,0.25),width=0.8, xaxt="none",  space=0) 
-abline(h=0.05, col="blue")
-axis(side = 2, font = 2)
-axis(side = 1, at = bp, las=2, labels=seq(0, 2*nb.locus, 1), cex.axis=0.8, font=2)
-mtext(side=1, line=2, "Number of differences", font=2,cex=0.8)
-mtext(side=2, line=3, "Frequency", font=2, cex=0.8)
-
-
-bp<-barplot(tab.freq[3,][0:(2*nb.locus+1)], main = "Full siblings", xlim = c(0,(2*nb.locus+1)),ylim = c(0,0.25),width=0.8, xaxt="none",  space=0) 
-abline(h=0.05, col="blue")
-axis(side = 2, font = 2)
-axis(side = 1, at = bp, las=2, labels=seq(0, 2*nb.locus, 1), cex.axis=0.8, font=2)
-mtext(side=1, line=2, "Number of differences", font=2,cex=0.8)
-mtext(side=2, line=3, "Frequency", font=2, cex=0.8)
+    bp<-barplot(tab.freq[2,][0:(2*nb.locus+1)], main = "Parent-offspring",,xlim = c(0,(2*nb.locus+1)),ylim = c(0,0.25),width=0.8, xaxt="none",  space=0) 
+    abline(h=0.05, col="blue")
+    axis(side = 2, font = 2)
+    axis(side = 1, at = bp, las=2, labels=seq(0, 2*nb.locus, 1), cex.axis=0.8, font=2)
+    mtext(side=1, line=2, "Number of differences", font=2,cex=0.8)
+    mtext(side=2, line=3, "Frequency", font=2, cex=0.8)
 
 
-bp<-barplot(tab.freq[4,][0:(2*nb.locus+1)], main = "Half siblings", xlim = c(0,(2*nb.locus+1)),ylim = c(0,0.25),width=0.8, xaxt="none",  space=0) 
-abline(h=0.05, col="blue")
-axis(side = 2, font = 2)
-axis(side = 1, at = bp, las=2, labels=seq(0, 2*nb.locus, 1), cex.axis=0.8, font=2)
-mtext(side=1, line=2, "Number of differences", font=2,cex=0.8)
-mtext(side=2, line=3, "Frequency", font=2, cex=0.8)
+    bp<-barplot(tab.freq[3,][0:(2*nb.locus+1)], main = "Full siblings", xlim = c(0,(2*nb.locus+1)),ylim = c(0,0.25),width=0.8, xaxt="none",  space=0) 
+    abline(h=0.05, col="blue")
+    axis(side = 2, font = 2)
+    axis(side = 1, at = bp, las=2, labels=seq(0, 2*nb.locus, 1), cex.axis=0.8, font=2)
+    mtext(side=1, line=2, "Number of differences", font=2,cex=0.8)
+    mtext(side=2, line=3, "Frequency", font=2, cex=0.8)
+
+
+    bp<-barplot(tab.freq[4,][0:(2*nb.locus+1)], main = "Half siblings", xlim = c(0,(2*nb.locus+1)),ylim = c(0,0.25),width=0.8, xaxt="none",  space=0) 
+    abline(h=0.05, col="blue")
+    axis(side = 2, font = 2)
+    axis(side = 1, at = bp, las=2, labels=seq(0, 2*nb.locus, 1), cex.axis=0.8, font=2)
+    mtext(side=1, line=2, "Number of differences", font=2,cex=0.8)
+    mtext(side=2, line=3, "Frequency", font=2, cex=0.8)
+dev.off()
 
 nb.locus = sample.nb.locus 
 
 ## Calcul de l'heterozygosity
 he.distr <- c()
-for(i in 1:nb.locus) #boucle sur les locus
-{
-list.freq <- c()
-for(j in 1:length(matrix.indata$locus)){ #boucle sur le fichier de data
-if(matrix.indata$locus[j] == locus.list[i]){
-list.freq <- c(list.freq, matrix.indata$frequence[j])
-}}
-som.freq.square <- sum(list.freq**2)
-he.distr <- c(he.distr, 1 - som.freq.square)
+for(i in 1:nb.locus){ #boucle sur les locus
+    list.freq <- c()
+    for(j in 1:length(matrix.indata$locus)){ #boucle sur le fichier de data
+        if(matrix.indata$locus[j] == locus.list[i]){
+            list.freq <- c(list.freq, matrix.indata$frequence[j])
+        }
+    }
+    som.freq.square <- sum(list.freq**2)
+    he.distr <- c(he.distr, 1 - som.freq.square)
 }
 mat.he = matrix(he.distr, nrow=1, ncol=nb.locus, byrow=TRUE)
 rownames(mat.he) <- "he"
 colnames(mat.he) <- locus.list
 sorted.he.distr = sort(mat.he[1,], decreasing=TRUE)
+write.csv(mat.he, file=paste0(output.dir, "/TableHeterozygosity.csv"), sep=";")
 print('Heterozygosity')
 print(sorted.he.distr)
-x11()
+
+paste0(output.dir, "/Heterozygosity.pdf")
 barplot(sorted.he.distr, main = "Expected heterozygosity for each locus", xlab = 'Locus', ylab = 'H0', names.arg=colnames(sorted.he.distr), axis.lty = 0, axisnames = TRUE, ylim = c(0,1))
+dev.off()
