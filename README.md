@@ -31,7 +31,7 @@ A table with a row per individual and two columns for each locus (one per allele
 | Individual | locus 1 | locus 1 | locus 2 | locus 2 | … | locus n | locus n |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Ind 1 | 125 | 136 | 10 | 15 | … | 56 | 80 |
-| … | | | | |  | |
+| … | | | |... |  | |
 | Ind n | 126 | 142 | 20 | 15 | … | 64 | 78 |
 
 ### Output file
@@ -49,9 +49,10 @@ where `<inputfile>` and `<outputfile>` are the path to your input and output fil
 A table with a column per locus and a row per alelle. If there is *x* individuals, the file should have *x*2* rows.
 
 | Locus 1 | Locus 2 | … | Locus n |
+| --- | --- | --- | --- |
 | All 1.1 | All 2.1 | … | All n.1 |
 | All 1.2 | All 2.2 | … | All n.2 |
-| … | | | |
+| … | |... | | 
 | All m.1 | All m.1 | … | All m.n |
 | All m.2 | All m.2 | … | All m.n |
 
@@ -91,9 +92,9 @@ Compulsory columns names are 'Pop', 'Sample', 'Year' and then loci names with:
 * for 'cols_to_rows': a row per individual and two columns for each locus (one per allele).
 
 | Pop | Sample | Year | locus 1 | locus 1 | locus 2 | locus 2 | … | locus n | locus n |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | CF1 |Ind 1 |2016 | 125 | 136 | 10 | 15 | … | 56 | 80 |
-| … | | | | |  | |
+| ... |  |  |  |  |  |  | ... | | |
 | CFn |Ind n |2022 | 126 | 142 | 20 | 15 | … | 64 | 78 |
 
 * for 'rows_to_cols': a column per locus and a row per allele
@@ -102,7 +103,7 @@ Compulsory columns names are 'Pop', 'Sample', 'Year' and then loci names with:
 | --- | --- | --- | --- | --- | --- | --- |
 | CF1 |Ind 1 |2016| All 1.1 | All 2.1 | … | All n.1 |
 | CF1 |Ind 1 |2016| All 1.2 | All 2.2 | … | All n.2 |
-| --- | --- | --- | … | | | |
+| ... |  |  |  | |... | |
 | CFn |Ind n |2022| All m.1 | All m.1 | … | All m.n |
 | CFn |Ind n |2022| All m.2 | All m.2 | … | All m.n |
 
