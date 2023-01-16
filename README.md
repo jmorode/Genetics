@@ -1,28 +1,28 @@
-# Genetics_Astyanax
+# Genetics
 
-This folder contains code that was used for studying populations of Astyanax mexicanus, which are surface and cave fishes, based on microsatellites genotypes.
+This folder contains code that was used for studying populations of species based on microsatellites genotypes.
 
 The scripts are the following: 
-- Frequencies.r: computes allelic frequencies and the probability that two unrelated individuals have the same genotype. It also allows to format a data file for the script GenerateIndividuals_Astyanax.r 
-- Pairwise_distance_genotypes_astyanax.r: it computes the pairwise distance between the genotypes that are given in input.
-- GenerateIndividuals_Astyanax.r: based on allelic frequencies of a given population, it computes and plots the heterozigosity. It also simulates, still based on these frequencies, families composed of a mother, two fathers, two full siblings and one half sibling. For each type of relationship (unrelated, full sibling, half sibling and parent offspring) it computes the pairwise distance between genotypes. It also formats an input files with the simulated families for MLRelate software. 
+- Frequencies.r: computes allelic frequencies and the probability that two unrelated individuals have the same genotype. It also allows to format a data file for the script GenerateIndividuals.r 
+- Pairwise_distance_genotypes.r: it computes the pairwise distance between the genotypes that are given in input.
+- GenerateIndividuals.r: based on allelic frequencies of a given population, it computes and plots the heterozigosity. It also simulates, still based on these frequencies, families composed of a mother, two fathers, two full siblings and one half sibling. For each type of relationship (unrelated, full sibling, half sibling and parent offspring) it computes the pairwise distance between genotypes. It also formats an input files with the simulated families for MLRelate software. 
 - reformat_genotypes_files_rows_cols.py: it allows to reformat genotypes input files, switching to a display of alleles values for each loci from double rows to double columns, and conversly. 
 
 This package is composed of 4 scripts:
 * Frequencies.r
-* GenerateIndividual_astyanax.r
-* Pairwise_distance_genotypes_astyanax.r
+* GenerateIndividual.r
+* Pairwise_distance_genotypes.r
 * reformat_genotypes_files_rows_cols.py
 
 ## Dependencies
 * R > 4.0
 * Python >= 3.9
 
-## Pairwise_distance_genotypes_astyanax.r
+## Pairwise_distance_genotypes.r
 Given a file containing observed microsatellite alleles in a population, this script is computating the genetic distance between each individual
 
 ### Usage
-`Rscript Pairwise_distance_genotype_astyanax.r <inputfile> <outputfile>`
+`Rscript Pairwise_distance_genotype.r <inputfile> <outputfile>`
 where `<inputfile>` and `<outputfile>` are the path to your input and output files.
 
 ### Input file
@@ -58,13 +58,13 @@ A table with a column per locus and a row per alelle. If there is *x* individual
 
 ### Output
 * Write in the terminal the probability that two unrelated individuals would have the same genotype.
-* Write the `<outputfile>`in the curreny directory for use with `GenerateIndividual_astyanax.r`
+* Write the `<outputfile>`in the curreny directory for use with `GenerateIndividual.r`
 
-## GenerateIndividual_astyanax.r
+## GenerateIndividual.r
 Generate individuals given then frequency of the different alleles given in input
 
 ### Usage
-`Rscript GenerateIndivual_astyanax.r <input file> <output directory>`
+`Rscript GenerateIndivual.r <input file> <output directory>`
 where `<input file>` is the path to the input file and `<output directory>` is the path to the directory where all output file will be written (that directory should exist).
 
 ### Input file
