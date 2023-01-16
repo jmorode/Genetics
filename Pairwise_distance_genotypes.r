@@ -1,4 +1,4 @@
-#Pairwise_distance_genotypes_astyanax.r
+#Pairwise_distance_genotypes.r
 #input: excel file with allele in only two colums by loci 
 #output: pairwise distance between genotypes: matrix + table counts + plot
 # --------------------------------------------------------------------------
@@ -6,10 +6,10 @@
 options <- commandArgs(trailingOnly = TRUE)
 
 if('help' %in% options | length(options) != 2){
-    cat(" === Pairwise_distance_genotypes_astyanax.r ====\n\
+    cat(" === Pairwise_distance_genotypes.r ====\n\
     Compute frequencies of microsatellites alleles given a table of observation\n\
     Usage: \n \
-    Rscript Pairwise_distance_genotypes_astyanax.r <input_file> <output_file>")
+    Rscript Pairwise_distance_genotypes.r <input_file> <output_file>")
     quit()
 }
 
